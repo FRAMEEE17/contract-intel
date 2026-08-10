@@ -24,6 +24,9 @@ jobs:
         run: |
           python -m venv .venv
           .venv/bin/pip install --upgrade pip
+          # CPU-only torch first so sentence-transformers doesn't pull the
+          # multi-GB CUDA build (the runner has no GPU and limited disk).
+          .venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
           .venv/bin/pip install -r requirements.txt
 
       - name: Run CI gate

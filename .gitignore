@@ -30,3 +30,6 @@ docs/interview-notes.md
 docs/explain.md
 docs/system-design.tex
 docs/system-design.pdf
+
+# --- portal screenshots (show real resource names / subscription id) ---
+docs/*.png

@@ -1,0 +1,20 @@
+# --- LLM clients ---
+openai                 # OpenAI + AzureOpenAI chat clients (app/adapters/llm/openai_chat.py)
+python-dotenv          # load .env (config.py, evals/jury.py)
+# azure-identity       # Managed Identity for Azure OpenAI (add when deploying to Azure)
+
+# --- document parsing / RAG slice ---
+pymupdf                # PDF text-layer extraction (app/adapters/documents/pdf_parser.py)
+azure-ai-documentintelligence  # DocParser OCR fallback (app/adapters/documents/azure_doc_intelligence.py)
+sentence-transformers  # local embeddings (app/adapters/embeddings/sentence_transformer.py)
+rank-bm25              # BM25 lexical scoring in hybrid search (app/adapters/search/in_memory.py)
+azure-search-documents # Azure AI Search hybrid retrieval (app/adapters/search/azure_ai_search.py)
+
+# --- eval / stats ---
+numpy                  # paired bootstrap CI + gate margin (evals/bootstrap.py, evals/gate.py)
+
+# --- dev / test ---
+pytest                 # unit suite (tests/)
+
+# --- serving (self-host GPU posture only; not needed for Azure / local MLX dev) ---
+# sglang

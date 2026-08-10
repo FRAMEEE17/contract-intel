@@ -1,0 +1,26 @@
+# --- secrets: NEVER commit ---
+.env
+.env.*
+!.env.example
+*.key
+*_key
+*.pem
+service_account*.json
+**/secrets/
+
+# --- python ---
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- OS / editor ---
+.DS_Store
+*.swp
+
+# --- transient eval outputs (baseline lives in a pinned file, not these) ---
+evals/report_azure_smoke.json
+evals/report_scratch*.json

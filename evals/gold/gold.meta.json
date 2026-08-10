@@ -1,0 +1,24 @@
+{
+  "source": "CUAD master_clauses.csv + full_contract_txt (Atticus)",
+  "built": "2026-08-02",
+  "num_items": 150,
+  "num_contracts": 15,
+  "num_categories": 10,
+  "categories": [
+    "Governing Law",
+    "Agreement Date",
+    "Expiration Date",
+    "Renewal Term",
+    "Notice Period To Terminate Renewal",
+    "Parties",
+    "Exclusivity",
+    "Anti-Assignment",
+    "Cap On Liability",
+    "Audit Rights"
+  ],
+  "no_answer_items": 58,
+  "no_answer_pct": 38.7,
+  "contract_sample_seed": 0,
+  "constraint": "every contract has official full_contract_txt",
+  "includes": "FuseMedicalInc Distributor Agreement"
+}

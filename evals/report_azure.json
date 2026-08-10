@@ -1,0 +1,89 @@
+{
+  "total_items": 150,
+  "answerable": 92,
+  "unanswerable": 58,
+  "counts": {
+    "A_CORRECT": 73,
+    "A_INCORRECT": 8,
+    "A_FALSE_ABSTENTION": 11,
+    "A_NO_CONTEXT": 0,
+    "A_MALFORMED": 0,
+    "A_BLOCKED": 0,
+    "A_INDETERMINATE": 0,
+    "U_CORRECT_ABSTAIN": 43,
+    "U_FABRICATED": 15,
+    "U_NO_CONTEXT": 0,
+    "U_MALFORMED": 0,
+    "U_BLOCKED": 0,
+    "U_INDETERMINATE": 0
+  },
+  "M1_hallucination_rate": {
+    "value": 0.15333333333333332,
+    "numerator": 23,
+    "denominator": 150,
+    "incorrect": {
+      "count": 8,
+      "rate": 0.05333333333333334
+    },
+    "fabricated": {
+      "count": 15,
+      "rate": 0.1
+    },
+    "conservative_upper": {
+      "value": 0.15333333333333332,
+      "numerator": 23,
+      "denominator": 150
+    },
+    "sensitivity_any_judge": {
+      "value": 0.24666666666666667,
+      "numerator": 37,
+      "denominator": 150
+    }
+  },
+  "M2_answer_correctness": {
+    "value": 0.7934782608695652,
+    "numerator": 73,
+    "denominator": 92
+  },
+  "M3_abstention": {
+    "correct_abstain_rate": {
+      "value": 0.7413793103448276,
+      "numerator": 43,
+      "denominator": 58
+    },
+    "false_abstention_rate": {
+      "value": 0.11956521739130435,
+      "numerator": 11,
+      "denominator": 92
+    }
+  },
+  "M4_malformed_rate": {
+    "value": 0.0,
+    "numerator": 0,
+    "denominator": 150
+  },
+  "diagnostics": {
+    "no_context_rate": 0.0,
+    "blocked_rate": 0.0,
+    "indeterminate_rate": 0.0,
+    "jury_disagreement_rate": 0.19791666666666666,
+    "jury_graded_items": 96
+  },
+  "audit": {
+    "partition_ok": true,
+    "answerable_plus_unanswerable_eq_total": true,
+    "flag_precedence": [
+      "blocked",
+      "malformed",
+      "no_context",
+      "abstained",
+      "answered"
+    ],
+    "m1_le_upper": true
+  },
+  "meta": {
+    "mode": "live",
+    "system_version": "azure-gpt5mini",
+    "n_items": 150
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "system_version": "azure-gpt5mini",
+  "n_items": 150,
+  "M1_upper": 0.15333333333333332,
+  "M1_point": 0.15333333333333332,
+  "M2_answer_correctness": 0.7934782608695652,
+  "false_abstention_rate": 0.11956521739130435,
+  "indeterminate_rate": 0.0,
+  "provenance": "make eval-live SYSTEM_VERSION=azure-gpt5mini PROMPT_VERSION=v2 (Azure gpt-5-mini + Groq jury), frozen 2026-08-10",
+  "note": "The PR gate ratchets the azure-gpt5mini replay to these frozen numbers. Re-pin ONLY after a live-tier paired-bootstrap PASS (make eval-live + python -m evals.gate --live --candidate <arm>), never to make a red build green."
+}

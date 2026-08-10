@@ -1,4 +1,4 @@
-"""Deterministic fixed-window Chunker adapter — whitespace-token windowing, no LLM."""
+"""Split text into overlapping token windows of a set size."""
 from __future__ import annotations
 
 import hashlib
@@ -7,8 +7,6 @@ from app.domain.ports import Chunk, ParsedDocument
 
 
 class FixedChunker:
-    """Implements app.domain.ports.Chunker via deterministic token windowing."""
-
     def chunk(
         self, *, document: ParsedDocument, max_tokens: int = 800, overlap: int = 80
     ) -> list[Chunk]:

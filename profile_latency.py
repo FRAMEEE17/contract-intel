@@ -1,4 +1,4 @@
-"""Single-request latency breakdown for answer_question — where does the time go?
+"""Single-request latency breakdown for answer_question: where does the time go?
 
 Wraps each injected port in a timing proxy (no change to answer_question), runs the
 real pipeline over a real contract K times, and reports per-stage cost. Needs a live

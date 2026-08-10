@@ -1,14 +1,14 @@
 """Eval-gate --- the CI merge gate for contract-QA quality (METRICS.md).
 
-Two tiers, matching the honest split between what offline replay can and cannot prove:
+Two tiers, matching what offline replay can and cannot prove:
 
-  * PR tier (default, deterministic, free).  Replays the pinned baseline arm's
-    committed cassettes through the CURRENT scoring code and ratchets the result to
-    the frozen numbers in gate_baseline.json. Because replay is bit-identical and
-    needs no network (jury verdicts are cached), the margin is zero: any real move
-    of the measurement --- a scoring/gold/judge-cassette change --- must fail and
-    force a conscious re-pin. It does NOT exercise the RAG pipeline, so it cannot
-    catch a live-quality regression; only the live tier re-measures the system.
+  * PR tier (default, offline, free).  Replays the pinned baseline arm's committed
+    cassettes through the current scoring code and ratchets the result to the frozen
+    numbers in gate_baseline.json. Replay gives the same numbers every run and needs
+    no network (jury verdicts are cached), so the margin is zero: any real move of
+    the measurement (a scoring/gold/judge-cassette change) must fail and force a
+    conscious re-pin. It does not exercise the RAG pipeline, so it cannot catch a
+    live-quality regression; only the live tier re-measures the system.
 
   * Live tier (--live, scheduled/manual).  After `make eval-live` regenerates a
     candidate arm against the real model + jury (genuinely stochastic), a paired

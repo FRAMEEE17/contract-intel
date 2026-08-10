@@ -1,4 +1,4 @@
-"""Eval scoring — map each gold item's outcome to a bucket, aggregate into M1–M4.
+"""Eval scoring: map each gold item's outcome to a bucket, aggregate into M1-M4.
 
 Grounded in evals/METRICS.md §0–§3. Core rules:
 
@@ -8,7 +8,7 @@ Grounded in evals/METRICS.md §0–§3. Core rules:
     success/abstention bucket.
   * Flag precedence resolves the no_context⊂abstained overlap:
         blocked > malformed > no_context > abstained > answered
-  * malformed / blocked / no_context / indeterminate are FAILURE buckets — they
+  * malformed / blocked / no_context / indeterminate are failure buckets; they
     sit only in denominators, never in the M1 numerator and never credited as a
     correct-abstain. (§0 "malformed = counted failure"; §1 hallucination = a false
     *assertion*, which these are not.)
@@ -18,8 +18,8 @@ Grounded in evals/METRICS.md §0–§3. Core rules:
     jury-unresolved items in, so disagreement cannot game the number downward. The
     CI gate keys on M1_upper.
 
-Everything here is a deterministic pure function of its inputs (the jury is
-injected), so it is fully unit-testable offline.
+Everything here is a pure function of its inputs (the jury is injected), so it is
+unit-testable offline.
 """
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def primary_outcome(result) -> str:
         return "blocked"
     if result.malformed:
         return "malformed"
-    if result.no_context:   # must precede 'abstained' — no_context also sets abstained
+    if result.no_context:   # must precede 'abstained': no_context also sets abstained
         return "no_context"
     if result.abstained:
         return "abstained"

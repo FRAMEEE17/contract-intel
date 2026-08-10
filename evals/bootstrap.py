@@ -1,6 +1,6 @@
 """Bootstrap confidence intervals for M1 and the X->Y delta.
 
-Answers "is the improvement real at n=150?" via a paired resample over items —
+Answers "is the improvement real at n=150?" via a paired resample over items,
 free (recomputed from committed cassettes, no model calls).
 """
 from __future__ import annotations

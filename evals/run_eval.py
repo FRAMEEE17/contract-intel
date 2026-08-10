@@ -1,4 +1,4 @@
-"""Eval runner — tie generation + jury + scoring into one metric report.
+"""Eval runner: tie generation + jury + scoring into one metric report.
 
 The honesty logic lives in evals/score.py (classify/aggregate); this module is
 the thin orchestration around it:
@@ -34,8 +34,8 @@ def score_items(items, *, answer_fn: Callable[[dict], object], judge_fn: Callabl
     """Run the pipeline over gold items and produce {report, records}.
 
     `answer_fn(item) -> AnswerResult`. `judge_fn(question, reference, answer) -> JuryResult`;
-    it is invoked (via classify) ONLY for `answered` items, so the jury cost — and
-    its laundering surface — is limited to items that produced a substantive answer.
+    it is invoked (via classify) only for `answered` items, so the jury cost (and its
+    laundering surface) is limited to items that produced a substantive answer.
     """
     records = []
     for item in items:
@@ -57,8 +57,8 @@ def score_items(items, *, answer_fn: Callable[[dict], object], judge_fn: Callabl
 def make_answer_fn(pipeline, *, top_k: int = 8, prompt_version: Optional[str] = None) -> Callable[[dict], object]:
     """answer_fn that caches one index per contract, grounding answers in its full text.
 
-    Full contract text (evals/gold/contracts/), not the gold snippet — an honest
-    number needs source grounding (METRICS §0). `pipeline` is a config.Pipeline.
+    Full contract text (evals/gold/contracts/), not the gold snippet, so answers are
+    grounded in the source (METRICS §0). `pipeline` is a config.Pipeline.
     """
     from app.application.answer import answer_question
 
@@ -123,7 +123,7 @@ def load_system_answer(system_version: str, item: dict) -> Optional[ReplayResult
 
 
 def replay_answer_fn(system_version: str) -> Callable[[dict], ReplayResult]:
-    """answer_fn that reads committed system cassettes — offline, deterministic."""
+    """answer_fn that replays committed system cassettes offline."""
     def answer_fn(item: dict) -> ReplayResult:
         cached = load_system_answer(system_version, item)
         if cached is None:

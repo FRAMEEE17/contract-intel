@@ -1,13 +1,9 @@
-"""Azure AI Document Intelligence DocParser — the production OCR fallback.
+"""Azure Document Intelligence parser (production OCR fallback).
 
-Sends the PDF to Azure Document Intelligence (prebuilt-read for text/OCR; swap
-model_id for a layout/table model) and returns its text + per-page lines. Auth
-follows the same rule as the LLM client: Managed Identity (Entra ID) in prod, an
-API key only as a local-dev fallback — no secret in code.
-
-The client is INJECTED (dependency injection), so the parse logic is unit-tested
-offline with a fake client; `for_azure(...)` builds the real one. Implements
-app.domain.ports.DocParser.
+Sends the PDF to Azure (prebuilt-read; swap model_id for a layout/table model) and
+returns text + per-page lines. The client is injected, so parse() is unit-tested
+with a fake and for_azure() builds the real one. Auth: Managed Identity by default,
+API key only for local dev.
 """
 from __future__ import annotations
 

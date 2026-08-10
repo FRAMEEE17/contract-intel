@@ -1,15 +1,11 @@
-"""AzureAISearch — SearchClient backed by a real Azure AI Search index (hybrid).
+"""Hybrid search backed by an Azure AI Search index.
 
-Implements app.domain.ports.SearchClient. `index()` creates the index schema on
-first use (idempotent create-or-update) and uploads chunks + passage vectors;
-`search()` issues ONE hybrid request — `search_text` drives BM25, a vector query
-drives ANN, and Azure fuses the two with Reciprocal Rank Fusion server-side (so the
-0.5/0.5 fusion InMemorySearch does by hand lives in the service here). `filters` is
-applied before ranking as an OData equality clause.
+index() creates the schema on first use (idempotent) and uploads chunks + vectors.
+search() issues one hybrid request (BM25 + vector); Azure fuses them with RRF
+server-side. Filters become an OData equality clause applied before ranking.
 
-Azure document keys allow only [A-Za-z0-9_-=]; chunk ids carry ':' and spaces, so
-the key is a base64url encoding of the chunk id and the original rides along in a
-retrievable `chunk_id` field.
+Azure keys allow only [A-Za-z0-9_-=], but chunk ids carry ':' and spaces, so the key
+is a base64url of the chunk id and the original rides along in a `chunk_id` field.
 """
 from __future__ import annotations
 

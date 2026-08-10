@@ -1,13 +1,8 @@
-"""InMemorySearch — hybrid (BM25 + cosine) SearchClient, no external index/server.
+"""In-memory hybrid search (BM25 + cosine), no external index.
 
-Implements app.domain.ports.SearchClient. Two signals are combined per ports.py's
-contract that search() takes both `query` (lexical) and `query_vector` (semantic):
-  * BM25 (rank_bm25.BM25Okapi) over lowercased-whitespace-tokenized chunk text.
-  * Cosine similarity between `query_vector` and each chunk's stored passage vector.
-Each signal is independently min-max normalized to [0, 1], then combined as
-0.5*bm25_norm + 0.5*cosine_norm. `filters` are applied BEFORE ranking (dict of
-attribute -> required value, matched against the stored Chunk; e.g. document_id,
-section), so BM25/cosine statistics are only compared within the eligible subset.
+Combines BM25 over tokenized chunk text with cosine similarity on the stored passage
+vectors. Each signal is min-max normalized to [0, 1] and fused 0.5/0.5. Filters are
+applied before ranking, so scores are only compared within the eligible subset.
 """
 from __future__ import annotations
 
@@ -42,8 +37,6 @@ def _min_max_normalize(scores: list[float]) -> list[float]:
 
 
 class InMemorySearch:
-    """Implements app.domain.ports.SearchClient with an in-process hybrid index."""
-
     def __init__(self) -> None:
         self._chunks: list[Chunk] = []
         self._vectors: list[list[float]] = []

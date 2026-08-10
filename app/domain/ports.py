@@ -1,15 +1,15 @@
-"""Domain ports (interfaces) — the stable contracts every adapter implements.
+"""Domain ports: the contracts every adapter implements.
 
-Provider choice (local vs Azure) is wired in `app/config.py`; business logic in
-`app/application/*` depends ONLY on these Protocols, never on a concrete SDK.
+Provider choice (local vs Azure) is wired in app/config.py; business logic in
+app/application/* depends on these Protocols, never on a concrete SDK.
 
-Design corrections baked in (from the architecture refuter gate):
-  * LLMClient.complete takes temperature + seed  → run-to-run control lives in the
-    contract, not just the eval judge. (refuter C1/C3)
-  * Embedder splits embed_query / embed_passage  → fixes the PoC bug of using a
-    passage-model for queries. (refuter C1)
-  * Structured output is validated by the caller; a parse failure is a COUNTED
-    failure mode (see application layer), never silently dropped. (refuter C1)
+Notes:
+  * LLMClient.complete takes temperature + seed, so run-to-run control lives in the
+    contract, not just the eval judge.
+  * Embedder splits embed_query / embed_passage (a query must not be embedded with
+    the passage model).
+  * Structured output is validated by the caller; a parse failure is a counted
+    failure, never silently dropped.
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from typing import Protocol, Sequence
 class Chunk:
     chunk_id: str
     document_id: str
-    text: str            # SOURCE contract text — never a summary (root-cause fix)
+    text: str            # source contract text, never a summary
     page: int | None = None
     section: str | None = None
     source_revision: str = ""
@@ -97,7 +97,7 @@ class DocParser(Protocol):
 
 
 class Chunker(Protocol):
-    # DETERMINISTIC: section/page-aware, no LLM call.
+    # section/page-aware, no LLM call
     def chunk(self, *, document: ParsedDocument, max_tokens: int = 800, overlap: int = 80) -> list[Chunk]: ...
 
 

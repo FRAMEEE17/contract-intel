@@ -1,17 +1,13 @@
-"""RAG answer use-case — compose the ports into one honest, source-grounded answer.
+"""RAG answer use-case: compose the ports into one source-grounded answer.
 
-Depends ONLY on the Protocols in app.domain.ports (dependency injection): the
-concrete provider (Azure OpenAI, local MLX, in-memory search, …) is chosen by the
-caller / composition root, never here.
+Depends only on the Protocols in app.domain.ports; the concrete provider (Azure
+OpenAI, local MLX, in-memory search) is chosen by the composition root.
 
-Honesty rules baked in (evals/METRICS.md §0, §2):
-  * A malformed LLM reply is a COUNTED failure (M4) and fails CLOSED — it is NOT
-    silently dropped and NOT counted as an abstention.
-  * "Not specified" (abstention), "blocked" (guardrail), "malformed", and
-    "answered" are DISTINCT outcomes; at most one is the primary result.
-  * No `grounded: bool` is emitted — we have no verifier model yet, so claiming
-    semantic grounding would be an unverifiable overclaim. We surface deterministic
-    signals (citation validity, guardrail findings); the eval jury owns verdicts.
+Outcomes are distinct and at most one is primary: answered, abstained ("not
+specified"), blocked (guardrail), or malformed. A malformed LLM reply is counted as
+a failure (M4) and fails closed, never dropped or read as an abstention. No
+`grounded: bool` is emitted: there is no verifier model, so the answer carries only
+checkable signals (citations, guardrail findings) and the eval jury owns verdicts.
 """
 from __future__ import annotations
 
@@ -30,7 +26,7 @@ from app.domain.ports import (
 
 NOT_SPECIFIED = "NOT SPECIFIED"
 
-# Minimal structured-output schema — works on Azure OpenAI JSON mode and local MLX.
+# structured-output schema; works on Azure OpenAI JSON mode and local MLX
 RESPONSE_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -51,7 +47,7 @@ class Citation:
     section: str | None
     source_revision: str
     score: float
-    text_sha256: str  # computed here from chunk.text — RetrievedChunk does not carry it
+    text_sha256: str  # computed from chunk.text; RetrievedChunk does not carry it
 
 
 @dataclass(frozen=True)
@@ -140,9 +136,9 @@ def answer_question(
     # embed the QUERY (never the passage model) and hybrid-search (both query + vector)
     qv = embedder.embed_query(query_text, model=embed_model)
     chunks = search.search(query=query_text, query_vector=qv, filters=filters, top_k=top_k)
-    chunks = sorted(chunks, key=lambda c: c.score, reverse=True)  # deterministic order for cassettes
+    chunks = sorted(chunks, key=lambda c: c.score, reverse=True)  # stable order for cassette replay
 
-    # no context -> honest source-grounded abstention, WITHOUT calling the LLM
+    # no context: abstain without calling the LLM
     if not chunks:
         return AnswerResult(answer=NOT_SPECIFIED, abstained=True, malformed=False, blocked=False,
                             no_context=True, retrieved_k=0, prompt_name=prompt_name,

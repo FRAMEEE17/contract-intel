@@ -1,18 +1,10 @@
-"""LLMClient over the OpenAI Chat Completions protocol — provider-agnostic by injection.
+"""Chat-completions LLM adapter, provider-agnostic by injection.
 
-This adapter speaks the OpenAI `chat.completions` surface and nothing else: it is
-handed an already-constructed client (openai.OpenAI, openai.AzureOpenAI, or any
-stand-in with the same shape) and never imports or names a provider. All provider
-wiring — endpoint, auth (API key vs Entra ID / Managed Identity), api_version, and
-the per-backend behaviour flags — lives in the composition root (app/config.py).
-
-Behaviour flags capture the small differences between backends:
-  * enable_thinking / template_thinking — open-model chat-template reasoning switch
-    (self-hosted only; never sent to Azure).
-  * json_mode — request JSON mode for structured output (Azure / OpenAI).
-
-Structured output is also stated in the prompt (portable); the CALLER validates
-and counts parse failures (ports.py). Implements app.domain.ports.LLMClient.
+Takes an already-built client (openai.OpenAI, openai.AzureOpenAI, or a stand-in) and
+never names a provider; all wiring lives in app/config.py. Behaviour flags cover the
+backend differences: the thinking toggle (self-hosted only, never sent to Azure),
+json_mode (Azure/OpenAI), and the reasoning dialect (gpt-5/o-series use
+max_completion_tokens and reject temperature/seed). The caller validates the output.
 """
 from __future__ import annotations
 
@@ -57,7 +49,7 @@ class OpenAIChatLLM:
         if self._reasoning:
             # Reasoning models (o-series, gpt-5): the cap is max_completion_tokens
             # (shared with hidden reasoning tokens, so it must be generous), and
-            # temperature/seed are rejected — only the model default is allowed.
+            # temperature/seed are rejected; only the model default is allowed.
             request["max_completion_tokens"] = self._max_tokens
         else:
             request["temperature"] = temperature

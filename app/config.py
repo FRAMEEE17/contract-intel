@@ -1,8 +1,7 @@
-"""Runtime wiring — turns environment / .env settings into concrete adapters.
+"""Runtime wiring: turn .env / environment settings into concrete adapters.
 
-Only this module (and other edge wiring) imports concrete adapters; the
-application layer depends solely on the Protocols in `app.domain.ports`,
-which is the dependency-injection point for swapping the LLM provider.
+Only this module imports concrete adapters; the application layer depends on the
+Protocols in app.domain.ports, so swapping the LLM provider is a config change here.
 
 Selection is via env (falls back to .env, same file evals/jury.py reads):
 
@@ -19,7 +18,7 @@ Selection is via env (falls back to .env, same file evals/jury.py reads):
     AZURE_OPENAI_ENDPOINT     https://<resource>.openai.azure.com   (required)
     AZURE_OPENAI_DEPLOYMENT   deployment name (used as `model`)      (required)
     AZURE_OPENAI_API_VERSION  default "2024-10-21" (use "2024-12-01-preview" for gpt-5)
-    AZURE_OPENAI_API_KEY      optional — omit to use Managed Identity (Entra ID)
+    AZURE_OPENAI_API_KEY      optional; omit to use Managed Identity (Entra ID)
     AZURE_OPENAI_REASONING    optional override; auto-detected from o-series/gpt-5 names
 """
 from __future__ import annotations
@@ -128,7 +127,7 @@ def _make_client(s: LLMSettings):
         if s.api_key:  # local-dev fallback
             return AzureOpenAI(azure_endpoint=s.azure_endpoint, api_version=s.api_version,
                                api_key=s.api_key, timeout=s.timeout)
-        try:  # preferred: Entra ID / Managed Identity — no secret in code
+        try:  # preferred: Entra ID / Managed Identity, no secret in code
             from azure.identity import DefaultAzureCredential, get_bearer_token_provider
         except ImportError as exc:
             raise RuntimeError(
@@ -187,7 +186,7 @@ class Pipeline:
 
 
 def build_pipeline(settings: LLMSettings | None = None) -> Pipeline:
-    """Assemble the answer pipeline — the one place its adapters are chosen."""
+    """Assemble the answer pipeline; the one place its adapters are chosen."""
     s = settings or load_llm_settings()
     from app.adapters.chunking.fixed_chunker import FixedChunker
     from app.adapters.documents.text_parser import TextDocParser

@@ -1,6 +1,6 @@
 """Live-verify AzureAISearch against a real Azure AI Search service.
 
-Prereq — provision an Azure AI Search service (Free tier is enough), then put its
+Prereq: provision an Azure AI Search service (Free tier is enough), then put its
 endpoint + admin key in .env:
     AZURE_SEARCH_ENDPOINT=https://<name>.search.windows.net
     AZURE_SEARCH_KEY=<primary admin key>
@@ -9,7 +9,7 @@ endpoint + admin key in .env:
 Then, from the project root:  python smoke_search.py
 
 Indexes one real gold contract into Azure AI Search, then runs a hybrid (BM25 +
-vector) query and checks relevant chunks come back — confirming auth + index
+vector) query and checks relevant chunks come back, confirming auth + index
 creation + upload + hybrid search + the filter clause.
 """
 from __future__ import annotations
@@ -36,7 +36,7 @@ QUESTION = "Which law governs this agreement?"
 
 
 def _search_with_retry(index, embedder, *, filters, tries=8, delay=2.0):
-    """Azure indexing is eventually consistent — poll until the new docs are searchable."""
+    """Azure indexing is eventually consistent; poll until the new docs are searchable."""
     qvec = embedder.embed_query(QUESTION, model=EMBED_MODEL)
     for attempt in range(tries):
         hits = index.search(query=QUESTION, query_vector=qvec, filters=filters, top_k=5)

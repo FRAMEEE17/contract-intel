@@ -1,4 +1,4 @@
-"""Smoke test — prove the wired LLMClient can talk to a live backend.
+"""Smoke test: prove the wired LLMClient can talk to a live backend.
 
 Uses the real composition root (app.config.build_llm), so it exercises provider
 selection too. Defaults to the local MLX provider:

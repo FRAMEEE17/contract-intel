@@ -1,7 +1,7 @@
-"""File-backed prompt registry — implements app.domain.ports.PromptRegistry.
+"""File-backed prompt registry.
 
-Scheme: prompts/{name}/{version}.txt holds the raw prompt text; prompts/production.json
-maps a prompt `name` to the version string currently designated as production.
+Layout: prompts/{name}/{version}.txt holds the prompt text; prompts/production.json
+maps a prompt name to its current production version.
 """
 from __future__ import annotations
 
@@ -13,8 +13,6 @@ DEFAULT_PROMPTS_ROOT = REPO_ROOT / "prompts"
 
 
 class FilePromptRegistry:
-    """Implements app.domain.ports.PromptRegistry by reading files under `root`."""
-
     def __init__(self, root: str | Path = DEFAULT_PROMPTS_ROOT):
         self._root = Path(root)
 

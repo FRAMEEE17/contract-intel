@@ -1,4 +1,4 @@
-"""LLM jury — three diverse judges vote on one answer's verdict.
+"""LLM jury: three diverse judges vote on one answer's verdict.
 
 Implements the judging rule in evals/METRICS.md:
   - panel of 3 different model families (decorrelated errors)
@@ -24,7 +24,7 @@ ENV_PATH = CONTRACT_INTEL_DIR / ".env"
 CACHE_DIR = Path(__file__).resolve().parent / "cassettes" / "judge"
 load_dotenv(ENV_PATH)  # load .env at import so JUDGE_* / GROQ_API_KEY are visible below
 
-# Judge provider — Groq free tier (OpenAI-compatible). Override without code edits.
+# Judge provider: Groq free tier (OpenAI-compatible). Override without code edits.
 JUDGE_BASE_URL = os.environ.get("JUDGE_BASE_URL", "https://api.groq.com/openai/v1")
 
 # 3 DIFFERENT model families -> decorrelated errors (METRICS.md D2). Groq slugs change
@@ -33,11 +33,11 @@ JUDGE_BASE_URL = os.environ.get("JUDGE_BASE_URL", "https://api.groq.com/openai/v
 _DEFAULT_JUDGES = (
     "llama-3.3-70b-versatile",  # Meta
     "openai/gpt-oss-120b",      # OpenAI (open-weight)
-    "qwen/qwen3.6-27b",         # Qwen — NOTE partial correlation with the Qwen generator
+    "qwen/qwen3.6-27b",         # Qwen: note partial correlation with the Qwen generator
 )
 JUDGES = tuple(m.strip() for m in os.environ.get("JUDGE_MODELS", "").split(",") if m.strip()) or _DEFAULT_JUDGES
 
-# Verdict taxonomy — mirrors METRICS.md §2.
+# Verdict taxonomy; mirrors METRICS.md §2.
 ALL_VERDICTS = ("correct", "incorrect", "abstained", "correct_abstain", "fabricated")
 HALLUCINATION_VERDICTS = frozenset({"incorrect", "fabricated"})
 
@@ -80,11 +80,11 @@ def _grading_prompt(question: str, reference: str, answer: str) -> str:
 
 
 def _extract_verdict(raw: str) -> str | None:
-    """Pull the verdict out of a reply, robust to reasoning models.
+    """Pull the verdict out of a reply, tolerating reasoning-model wrappers.
 
     A greedy `\\{.*\\}` breaks on models that emit a <think>…</think> block with
     stray braces before the JSON. Instead we scan every balanced JSON object in the
-    text and return the verdict of the LAST one that carries a valid verdict — the
+    text and return the verdict of the last one that carries a valid verdict; the
     real answer comes after any reasoning.
     """
     decoder = json.JSONDecoder()

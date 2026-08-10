@@ -1,8 +1,7 @@
-"""No-op guardrail — implements app.domain.ports.Guardrail.
+"""No-op guardrail: always allows, never redacts.
 
-MVP passthrough: always allows, never redacts, never finds anything. Real
-PII / content-safety inspection is a later adapter behind the same Protocol;
-this one exists so the pipeline has a Guardrail to call from day one.
+A placeholder so the pipeline has a Guardrail to call. Real PII / content-safety
+inspection is a later adapter behind the same Protocol.
 """
 from __future__ import annotations
 
@@ -12,8 +11,6 @@ from app.domain.ports import GuardrailResult, RetrievedChunk
 
 
 class PassthroughGuardrail:
-    """Implements app.domain.ports.Guardrail as an always-allow no-op."""
-
     def inspect_input(self, text: str, *, metadata: dict) -> GuardrailResult:
         findings: list[str] = []
         return GuardrailResult(allowed=True, redacted_text=None, findings=findings)

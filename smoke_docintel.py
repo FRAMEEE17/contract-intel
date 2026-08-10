@@ -1,6 +1,6 @@
 """Live-verify AzureDocIntelligenceParser against a real Azure resource.
 
-Prereq — provision a Document Intelligence (FormRecognizer) resource, then put its
+Prereq: provision a Document Intelligence (FormRecognizer) resource, then put its
 endpoint + key in .env:
     AZURE_DOC_INTEL_ENDPOINT=https://<name>.cognitiveservices.azure.com/
     AZURE_DOC_INTEL_KEY=<key1>

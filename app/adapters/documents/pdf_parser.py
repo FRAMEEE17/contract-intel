@@ -1,14 +1,13 @@
-"""PyMuPDF DocParser — extract the embedded text layer, OCR only when there isn't one.
+"""PyMuPDF parser: extract the embedded text layer.
 
-When a PDF has no usable text layer (a scan), the work is delegated to an
-injected `ocr_fallback` DocParser (e.g. the Azure Document Intelligence adapter).
-Implements app.domain.ports.DocParser.
+When a PDF has no usable text layer (a scan), delegates to the injected
+ocr_fallback parser (e.g. Azure Document Intelligence).
 """
 from __future__ import annotations
 
 from app.domain.ports import DocParser, ParsedDocument
 
-_PAGE_SEP = "\f"  # form-feed page separator — TextDocParser splits on the same char
+_PAGE_SEP = "\f"  # form-feed; TextDocParser splits on the same char
 
 
 class PyMuPDFDocParser:
@@ -19,7 +18,7 @@ class PyMuPDFDocParser:
         self._min_chars_per_page = min_chars_per_page
 
     def parse(self, *, content: bytes, filename: str) -> ParsedDocument:
-        import fitz  # PyMuPDF — imported here so the module loads even if it isn't installed
+        import fitz  # lazy import so the module loads without PyMuPDF installed
 
         pages: list[str] = []
         with fitz.open(stream=content, filetype="pdf") as doc:
@@ -30,7 +29,7 @@ class PyMuPDFDocParser:
         total_chars = sum(len(p.strip()) for p in pages)
         looks_scanned = total_chars < self._min_chars_per_page * n_pages
 
-        # No usable text layer -> hand the ORIGINAL bytes to the OCR fallback.
+        # scanned: hand the original bytes to the OCR fallback
         if looks_scanned and self._ocr_fallback is not None:
             return self._ocr_fallback.parse(content=content, filename=filename)
 

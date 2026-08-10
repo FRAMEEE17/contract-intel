@@ -24,3 +24,9 @@ __pycache__/
 # --- transient eval outputs (baseline lives in a pinned file, not these) ---
 evals/report_azure_smoke.json
 evals/report_scratch*.json
+
+# --- local-only notes, kept out of the repo ---
+docs/interview-notes.md
+docs/explain.md
+docs/system-design.tex
+docs/system-design.pdf

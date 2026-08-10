@@ -33,3 +33,10 @@ docs/system-design.pdf
 
 # --- portal screenshots (show real resource names / subscription id) ---
 docs/*.png
+
+# --- terraform (state + tfvars hold secrets/ids) ---
+infra/.terraform/
+infra/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+infra/terraform.tfvars

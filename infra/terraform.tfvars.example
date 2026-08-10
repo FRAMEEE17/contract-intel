@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored (holds a key).
+subscription_id         = "<your-subscription-id>"
+acr_name                = "contractintelacr"   # must be globally unique
+azure_openai_endpoint   = "https://<resource>.openai.azure.com/"
+azure_openai_deployment = "gpt-5-mini"
+azure_openai_api_key    = "<key>"

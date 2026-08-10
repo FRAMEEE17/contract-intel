@@ -10,11 +10,9 @@ sentence-transformers  # local embeddings (app/adapters/embeddings/sentence_tran
 rank-bm25              # BM25 lexical scoring in hybrid search (app/adapters/search/in_memory.py)
 azure-search-documents # Azure AI Search hybrid retrieval (app/adapters/search/azure_ai_search.py)
 
-# --- eval / stats ---
-numpy                  # paired bootstrap CI + gate margin (evals/bootstrap.py, evals/gate.py)
-
-# --- dev / test ---
-pytest                 # unit suite (tests/)
-
-# --- serving (self-host GPU posture only; not needed for Azure / local MLX dev) ---
+fastapi                
+uvicorn                
+httpx                 
+numpy               
+pytest               
 # sglang

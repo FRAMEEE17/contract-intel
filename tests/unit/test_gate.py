@@ -42,3 +42,11 @@ def test_partial_gold_is_config_error_not_pass(monkeypatch):
 def test_missing_baseline_is_config_error(monkeypatch, tmp_path):
     monkeypatch.setattr(gate, "BASELINE_PATH", tmp_path / "nope.json")
     assert gate.main([]) == 2
+
+
+def test_gold_tamper_is_config_error(monkeypatch, tmp_path):
+    # same line count as the real gold, but different content -> hash must catch it
+    fake_gold = tmp_path / "gold.jsonl"
+    fake_gold.write_text("\n".join('{"tampered": true}' for _ in range(150)) + "\n")
+    monkeypatch.setattr(gate, "GOLD_PATH", fake_gold)
+    assert gate.main([]) == 2         # gold hash mismatch -> exit 2, never a silent pass

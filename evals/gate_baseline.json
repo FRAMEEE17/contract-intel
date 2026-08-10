@@ -1,6 +1,7 @@
 {
   "system_version": "azure-gpt5mini",
   "n_items": 150,
+  "gold_sha256": "0dbce4c086313e9d72239e2c38036b3afc70d48f4f94bee9fc94c32d9d61f369",
   "M1_upper": 0.15333333333333332,
   "M1_point": 0.15333333333333332,
   "M2_answer_correctness": 0.7934782608695652,

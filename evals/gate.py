@@ -22,12 +22,14 @@ broke" from "quality regressed".
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
 from typing import Optional
 
 BASELINE_PATH = Path(__file__).resolve().parent / "gate_baseline.json"
+GOLD_PATH = Path(__file__).resolve().parent / "gold" / "gold.jsonl"
 EPS = 1e-9
 
 
@@ -40,6 +42,21 @@ def _load_baseline(path: Optional[Path] = None) -> dict:
     if not path.exists():
         raise GateConfigError(f"baseline file not found: {path} (pin one from a live run first)")
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _assert_gold_unchanged(baseline: dict) -> None:
+    """The pinned metrics only mean something against the gold set they were measured
+    on, so refuse to compare if gold.jsonl changed (n==150 alone doesn't catch an
+    edited ground_truth or has_answer)."""
+    pinned = baseline.get("gold_sha256")
+    if not pinned:
+        return  # older baseline without a pin
+    actual = hashlib.sha256(GOLD_PATH.read_bytes()).hexdigest()
+    if actual != pinned:
+        raise GateConfigError(
+            f"gold set changed (sha256 {actual[:12]} != pinned {pinned[:12]}); the pinned "
+            "metrics are tied to a specific gold set. Review the change, then re-pin the baseline."
+        )
 
 
 def _replay_report(system_version: str) -> dict:
@@ -95,6 +112,7 @@ def _run_pr_gate(system_version: str, baseline: dict, *, label: str = "PR gate")
     """Replay `system_version`, ratchet to `baseline`. Returns an exit code."""
     print(f"-> {label}: replaying arm '{system_version}' vs pinned baseline "
           f"'{baseline['system_version']}' (n={baseline['n_items']})")
+    _assert_gold_unchanged(baseline)
     report = _replay_report(system_version)
     results = _checks(report, baseline)
     for passed, name, detail in results:

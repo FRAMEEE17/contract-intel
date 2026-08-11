@@ -1,22 +1,23 @@
-# Backend: FastAPI over answer_question.
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# CPU-only torch keeps the image ~1.5GB instead of ~5GB (no CUDA on the target runner).
-RUN pip install --no-cache-dir --upgrade pip \
- && pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Bake the embedding model into the image so the first request doesn't stall on a
-# model download (matters for scale-to-zero / cold starts).
+# Backend: FastAPI over answer_question. Multi-stage so the final image carries only
+# the venv + baked model + code (no pip cache, no build tools).
+FROM python:3.11-slim AS builder
+ENV PIP_NO_CACHE_DIR=1 HF_HOME=/opt/hf PATH="/opt/venv/bin:$PATH"
+RUN python -m venv /opt/venv \
+ && pip install --upgrade pip \
+ && pip install torch --index-url https://download.pytorch.org/whl/cpu
+COPY requirements-api.txt .
+RUN pip install -r requirements-api.txt
+# Bake the embedding model into the image (HF_HOME) so the first request doesn't
+# stall on a download — matters for scale-to-zero / cold starts.
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
 
+FROM python:3.11-slim
+ENV HF_HOME=/opt/hf PATH="/opt/venv/bin:$PATH"
+WORKDIR /app
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /opt/hf /opt/hf
 COPY app/ ./app/
 COPY api/ ./api/
 COPY prompts/ ./prompts/
-
 EXPOSE 8000
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

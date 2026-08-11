@@ -12,7 +12,7 @@ from __future__ import annotations
 import hashlib
 from typing import Any, Dict, Optional
 
-from fastapi import FastAPI, File, UploadFile # type: ignore
+from fastapi import FastAPI, File, HTTPException, UploadFile # type: ignore
 from pydantic import BaseModel, Field
 
 # Each column of the abstraction grid is one QA question run over a contract; an
@@ -37,7 +37,8 @@ class AnswerRequest(BaseModel):
 
 
 class SummarizeRequest(BaseModel):
-    document_text: str = Field(min_length=1)
+    document_text: Optional[str] = None   # paste text, or...
+    document_id: Optional[str] = None      # ...summarize a contract already in the library
 
 
 class SummaryResponse(BaseModel):
@@ -108,6 +109,7 @@ class ContractRepository:
         self._chunks: list = []
         self._vectors: list = []
         self._meta: Dict[str, dict] = {}
+        self._texts: Dict[str, str] = {}
 
     def add(self, *, title: str, text: str) -> dict:
         p = self._p
@@ -122,10 +124,14 @@ class ContractRepository:
         self._chunks, self._vectors = all_chunks, all_vectors
         meta = {"document_id": title, "chunks": len(chunks), "chars": len(text)}
         self._meta[title] = meta
+        self._texts[title] = text
         return meta
 
     def list(self) -> list:
         return list(self._meta.values())
+
+    def text_for(self, document_id: str) -> Optional[str]:
+        return self._texts.get(document_id)
 
     def answer(self, question: str, *, document_id: Optional[str], top_k: int):
         from app.application.answer import answer_question
@@ -209,8 +215,16 @@ def create_app(pipeline: Any = None) -> FastAPI:
     def summarize(req: SummarizeRequest) -> SummaryResponse:
         from app.application.summarize import summarize_contract
 
+        if req.document_id:
+            text = get_repo().text_for(req.document_id)
+            if text is None:
+                raise HTTPException(status_code=404, detail=f"contract {req.document_id!r} not in the library")
+        elif req.document_text:
+            text = req.document_text
+        else:
+            raise HTTPException(status_code=422, detail="provide document_text or document_id")
         p = get_pipeline()
-        return SummaryResponse(summary=summarize_contract(req.document_text, llm=p.llm, model=p.model))
+        return SummaryResponse(summary=summarize_contract(text, llm=p.llm, model=p.model))
 
     @app.post("/ingest", response_model=IngestResponse)
     def ingest(file: UploadFile = File(...)) -> IngestResponse:

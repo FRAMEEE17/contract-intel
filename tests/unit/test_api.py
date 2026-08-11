@@ -54,6 +54,18 @@ def test_summarize_returns_summary(make_llm, fake_embedder):
     assert "New York" in body["summary"]
 
 
+def test_summarize_a_library_contract_by_id(make_llm, fake_embedder):
+    client = _client(make_llm, fake_embedder, "Summary: governed by New York law.")
+    client.post("/contracts", json={"title": "A.pdf", "document_text": CONTRACT})
+    body = client.post("/summarize", json={"document_id": "A.pdf"}).json()
+    assert "New York" in body["summary"]
+
+
+def test_summarize_unknown_contract_is_404(make_llm, fake_embedder):
+    client = _client(make_llm, fake_embedder, "x")
+    assert client.post("/summarize", json={"document_id": "missing.pdf"}).status_code == 404
+
+
 def test_add_and_list_contracts(make_llm, fake_embedder):
     client = _client(make_llm, fake_embedder, "{}")
     client.post("/contracts", json={"title": "A.pdf", "document_text": CONTRACT})

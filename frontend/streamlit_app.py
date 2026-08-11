@@ -166,19 +166,38 @@ elif page == "Chat":
             st.session_state.messages.append({"role": "assistant", "content": body})
 
 
-# --- Summarize: quick paste-and-summarize ---
+# --- Summarize: a library contract, or pasted text ---
 elif page == "Summarize":
     st.title("📄 Contract Summarizer")
-    st.session_state.active_text = st.text_area(
-        "Contract text", value=st.session_state.active_text, height=280
-    )
-    if st.button("Summarize", type="primary"):
-        if not st.session_state.active_text.strip():
-            st.warning("Paste a contract first.")
-            st.stop()
+    try:
+        contracts = _get("/contracts").json()
+    except Exception:
+        contracts = []
+
+    source = st.radio("Source", ["From library", "Paste text"], horizontal=True,
+                      index=0 if contracts else 1)
+
+    payload = None
+    if source == "From library":
+        if not contracts:
+            st.info("The library is empty — add a contract on the Library page first.")
+        else:
+            selected = st.selectbox("Contract", [c["document_id"] for c in contracts])
+            if st.button("Summarize", type="primary"):
+                payload = {"document_id": selected}
+    else:
+        st.session_state.active_text = st.text_area(
+            "Contract text", value=st.session_state.active_text, height=260
+        )
+        if st.button("Summarize", type="primary"):
+            if not st.session_state.active_text.strip():
+                st.warning("Paste a contract first.")
+                st.stop()
+            payload = {"document_text": st.session_state.active_text}
+
+    if payload is not None:
         with st.spinner("Summarizing..."):
             try:
-                summary = _post("/summarize", json={"document_text": st.session_state.active_text}).json()["summary"]
-                st.markdown(summary)
+                st.markdown(_post("/summarize", json=payload).json()["summary"])
             except Exception as exc:
                 st.error(f"API error: {exc}")

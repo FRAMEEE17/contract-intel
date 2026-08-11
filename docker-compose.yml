@@ -1,6 +1,3 @@
-# Local, $0 stack: backend API + Streamlit frontend.
-#   docker compose up --build   ->   UI on :8501, API on :8000
-# The api service reads Azure OpenAI creds from .env (copy .env.example -> .env).
 services:
   api:
     build:
@@ -12,7 +9,6 @@ services:
       - .env
     environment:
       LLM_PROVIDER: azure
-      # memory by default (portable); set SEARCH_PROVIDER=azure to use Azure AI Search
       SEARCH_PROVIDER: ${SEARCH_PROVIDER:-memory}
       AZURE_SEARCH_INDEX: contracts
     healthcheck:

@@ -5,10 +5,8 @@ __pycache__
 .pytest_cache
 .mypy_cache
 .ruff_cache
-# secrets never enter the image
 .env
 .env.*
-# not needed at runtime (API takes contract text in the request)
 evals/cassettes
 evals/gold
 tests

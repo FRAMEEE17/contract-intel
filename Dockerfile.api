@@ -1,5 +1,3 @@
-# Backend: FastAPI over answer_question. Multi-stage so the final image carries only
-# the venv + baked model + code (no pip cache, no build tools).
 FROM python:3.11-slim AS builder
 ENV PIP_NO_CACHE_DIR=1 HF_HOME=/opt/hf PATH="/opt/venv/bin:$PATH"
 RUN python -m venv /opt/venv \
@@ -7,8 +5,6 @@ RUN python -m venv /opt/venv \
  && pip install torch --index-url https://download.pytorch.org/whl/cpu
 COPY requirements-api.txt .
 RUN pip install -r requirements-api.txt
-# Bake the embedding model into the image (HF_HOME) so the first request doesn't
-# stall on a download — matters for scale-to-zero / cold starts.
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
 
 FROM python:3.11-slim

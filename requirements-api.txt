@@ -1,13 +1,10 @@
-# Runtime deps for the serving API only — deliberately smaller than requirements.txt
-# (no pytest, no pymupdf, no azure-di / azure-search): the API takes contract text in
-# the request and uses the in-memory index, so it never touches those.
-openai                 # Azure OpenAI chat client
-python-dotenv          # .env loading in app/config.py
-sentence-transformers  # local embeddings (pulls CPU torch, installed separately)
-rank-bm25              # BM25 in the in-memory hybrid search
-azure-search-documents # Azure AI Search store for the contract repository (SEARCH_PROVIDER=azure)
-pymupdf                # PDF text extraction for /ingest
+openai
+python-dotenv
+sentence-transformers
+rank-bm25
+azure-search-documents
+pymupdf
 fastapi
 uvicorn
-python-multipart       # file uploads (/ingest)
+python-multipart
 httpx

@@ -1,4 +1,3 @@
-# Frontend: Streamlit UI. No ML stack, so the image stays small (~300MB).
 FROM python:3.11-slim
 
 WORKDIR /app

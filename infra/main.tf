@@ -18,7 +18,6 @@ resource "azurerm_resource_group" "this" {
   location = var.location
 }
 
-# Container Apps requires a Log Analytics workspace for logs.
 resource "azurerm_log_analytics_workspace" "this" {
   name                = "contract-intel-logs"
   resource_group_name = azurerm_resource_group.this.name
@@ -32,7 +31,7 @@ resource "azurerm_container_registry" "this" {
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
   sku                 = "Basic"
-  admin_enabled       = true # simple auth for the demo; prod uses Managed Identity
+  admin_enabled       = true
 }
 
 resource "azurerm_container_app_environment" "this" {
@@ -42,7 +41,6 @@ resource "azurerm_container_app_environment" "this" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
 }
 
-# --- backend API ---
 resource "azurerm_container_app" "api" {
   name                         = "contract-intel-api"
   container_app_environment_id = azurerm_container_app_environment.this.id
@@ -75,7 +73,7 @@ resource "azurerm_container_app" "api" {
   }
 
   template {
-    min_replicas = 1 # one warm replica avoids cold-start on the ~1.5GB image
+    min_replicas = 1
     max_replicas = 5
 
     container {
@@ -113,7 +111,6 @@ resource "azurerm_container_app" "api" {
   }
 }
 
-# --- frontend ---
 resource "azurerm_container_app" "frontend" {
   name                         = "contract-intel-frontend"
   container_app_environment_id = azurerm_container_app_environment.this.id

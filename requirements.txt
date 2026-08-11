@@ -10,9 +10,10 @@ sentence-transformers  # local embeddings (app/adapters/embeddings/sentence_tran
 rank-bm25              # BM25 lexical scoring in hybrid search (app/adapters/search/in_memory.py)
 azure-search-documents # Azure AI Search hybrid retrieval (app/adapters/search/azure_ai_search.py)
 
-fastapi                
-uvicorn                
-httpx                 
-numpy               
-pytest               
+fastapi
+uvicorn
+python-multipart       # file uploads for the /ingest endpoint
+httpx
+numpy
+pytest
 # sglang

@@ -46,3 +46,24 @@ def test_answer_abstains_when_model_says_not_specified(make_llm, fake_embedder):
 def test_answer_validation_rejects_empty_question(make_llm, fake_embedder):
     client = _client(make_llm, fake_embedder, "{}")
     assert client.post("/answer", json={"question": "", "document_text": CONTRACT}).status_code == 422
+
+
+def test_summarize_returns_summary(make_llm, fake_embedder):
+    client = _client(make_llm, fake_embedder, "Parties: A and B. Governing law: New York.")
+    body = client.post("/summarize", json={"document_text": CONTRACT}).json()
+    assert "New York" in body["summary"]
+
+
+def test_ingest_extracts_pdf_text(make_llm, fake_embedder):
+    import fitz  # build a tiny text PDF in-memory
+
+    doc = fitz.open()
+    doc.new_page().insert_text((72, 72), "Governing law: State of New York.")
+    pdf_bytes = doc.tobytes()
+    doc.close()
+
+    client = _client(make_llm, fake_embedder, "{}")
+    resp = client.post("/ingest", files={"file": ("contract.pdf", pdf_bytes, "application/pdf")})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "New York" in body["text"] and body["pages"] >= 1

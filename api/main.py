@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 from typing import Any, Optional
 
-from fastapi import FastAPI # type: ignore
+from fastapi import FastAPI, File, UploadFile # type: ignore
 from pydantic import BaseModel, Field
 
 
@@ -17,6 +17,20 @@ class AnswerRequest(BaseModel):
     question: str = Field(min_length=1)
     document_text: str = Field(min_length=1)
     top_k: int = 8
+
+
+class SummarizeRequest(BaseModel):
+    document_text: str = Field(min_length=1)
+
+
+class SummaryResponse(BaseModel):
+    summary: str
+
+
+class IngestResponse(BaseModel):
+    text: str
+    pages: int
+    chars: int
 
 
 class CitationOut(BaseModel):
@@ -90,6 +104,21 @@ def create_app(pipeline: Any = None) -> FastAPI:
             ],
             model=result.model,
         )
+
+    @app.post("/summarize", response_model=SummaryResponse)
+    def summarize(req: SummarizeRequest) -> SummaryResponse:
+        from app.application.summarize import summarize_contract
+
+        p = get_pipeline()
+        return SummaryResponse(summary=summarize_contract(req.document_text, llm=p.llm, model=p.model))
+
+    @app.post("/ingest", response_model=IngestResponse)
+    def ingest(file: UploadFile = File(...)) -> IngestResponse:
+        from app.adapters.documents.pdf_parser import PyMuPDFDocParser
+
+        content = file.file.read()
+        parsed = PyMuPDFDocParser().parse(content=content, filename=file.filename or "upload.pdf")
+        return IngestResponse(text=parsed.text, pages=len(parsed.pages), chars=len(parsed.text))
 
     return app
 

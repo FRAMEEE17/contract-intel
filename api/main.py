@@ -112,10 +112,14 @@ class ContractRepository:
     def add(self, *, title: str, text: str) -> dict:
         p = self._p
         doc = p.parser.parse(content=text.encode("utf-8"), filename=title)
-        chunks = p.chunker.chunk(document=doc)
-        self._chunks.extend(chunks)
-        self._vectors.extend(p.embedder.embed_passage(c.text, model=p.embed_model) for c in chunks)
-        self._search.index(self._chunks, self._vectors)
+        chunks = list(p.chunker.chunk(document=doc))
+        vectors = [p.embedder.embed_passage(c.text, model=p.embed_model) for c in chunks]
+        # Index the full set first; commit local state only if indexing succeeds, so a
+        # failed upload can't leave orphan chunks for the next add to flush.
+        all_chunks = self._chunks + chunks
+        all_vectors = self._vectors + vectors
+        self._search.index(all_chunks, all_vectors)
+        self._chunks, self._vectors = all_chunks, all_vectors
         meta = {"document_id": title, "chunks": len(chunks), "chars": len(text)}
         self._meta[title] = meta
         return meta

@@ -198,6 +198,27 @@ elif page == "Summarize":
     if payload is not None:
         with st.spinner("Summarizing..."):
             try:
-                st.markdown(_post("/summarize", json=payload).json()["summary"])
+                data = _post("/summarize", json=payload).json()
             except Exception as exc:
                 st.error(f"API error: {exc}")
+                st.stop()
+
+        if data.get("title"):
+            st.subheader(data["title"])
+        if data.get("parties"):
+            st.write("**Parties:** " + ", ".join(
+                f"{p.get('name', '?')} ({p.get('role', '')})" for p in data["parties"]))
+        term = data.get("term") or {}
+        if term:
+            st.write(f"**Term:** {term.get('initial_term', '')} "
+                     f"({term.get('start_date', '?')} → {term.get('end_date', '?')})")
+        if data.get("overview"):
+            st.write(data["overview"])
+        if data.get("key_conditions"):
+            st.markdown("**Key conditions**")
+            st.table([{"Priority": c.get("priority", ""), "Condition": c.get("description", ""),
+                       "Impact": c.get("impact", "")} for c in data["key_conditions"]])
+        if data.get("important_dates"):
+            st.markdown("**Important dates**")
+            st.table([{"Priority": d.get("priority", ""), "Date": d.get("date", ""),
+                       "Description": d.get("description", "")} for d in data["important_dates"]])

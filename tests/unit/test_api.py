@@ -48,17 +48,19 @@ def test_answer_validation_rejects_empty_question(make_llm, fake_embedder):
     assert client.post("/answer", json={"question": "", "document_text": CONTRACT}).status_code == 422
 
 
-def test_summarize_returns_summary(make_llm, fake_embedder):
-    client = _client(make_llm, fake_embedder, "Parties: A and B. Governing law: New York.")
+def test_summarize_returns_structured_summary(make_llm, fake_embedder):
+    reply = '{"title": "T", "overview": "Governed by New York law.", "parties": []}'
+    client = _client(make_llm, fake_embedder, reply)
     body = client.post("/summarize", json={"document_text": CONTRACT}).json()
-    assert "New York" in body["summary"]
+    assert body["title"] == "T" and "New York" in body["overview"]
 
 
 def test_summarize_a_library_contract_by_id(make_llm, fake_embedder):
-    client = _client(make_llm, fake_embedder, "Summary: governed by New York law.")
+    reply = '{"title": "A", "overview": "New York law governs.", "parties": []}'
+    client = _client(make_llm, fake_embedder, reply)
     client.post("/contracts", json={"title": "A.pdf", "document_text": CONTRACT})
     body = client.post("/summarize", json={"document_id": "A.pdf"}).json()
-    assert "New York" in body["summary"]
+    assert "New York" in body["overview"]
 
 
 def test_summarize_unknown_contract_is_404(make_llm, fake_embedder):

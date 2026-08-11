@@ -41,10 +41,6 @@ class SummarizeRequest(BaseModel):
     document_id: Optional[str] = None      # ...summarize a contract already in the library
 
 
-class SummaryResponse(BaseModel):
-    summary: str
-
-
 class IngestResponse(BaseModel):
     text: str
     pages: int
@@ -211,8 +207,8 @@ def create_app(pipeline: Any = None) -> FastAPI:
             result = get_repo().answer(req.question, document_id=req.document_id, top_k=req.top_k)
         return _to_response(result)
 
-    @app.post("/summarize", response_model=SummaryResponse)
-    def summarize(req: SummarizeRequest) -> SummaryResponse:
+    @app.post("/summarize")
+    def summarize(req: SummarizeRequest) -> dict:
         from app.application.summarize import summarize_contract
 
         if req.document_id:
@@ -224,7 +220,7 @@ def create_app(pipeline: Any = None) -> FastAPI:
         else:
             raise HTTPException(status_code=422, detail="provide document_text or document_id")
         p = get_pipeline()
-        return SummaryResponse(summary=summarize_contract(text, llm=p.llm, model=p.model))
+        return summarize_contract(text, llm=p.llm, model=p.model)
 
     @app.post("/ingest", response_model=IngestResponse)
     def ingest(file: UploadFile = File(...)) -> IngestResponse:

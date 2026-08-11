@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from app.domain.ports import Chunker, DocParser, Embedder, Guardrail, PromptRegistry
 
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBED_DIM = 384  # all-MiniLM-L6-v2 output dimension (for the Azure Search vector field)
 
 APP_DIR = Path(__file__).resolve().parent
 ENV_PATH = APP_DIR.parent / ".env"
@@ -169,6 +170,25 @@ def build_llm(settings: LLMSettings | None = None) -> LLMClient:
         json_mode=is_azure,               # Azure supports response_format JSON mode
         reasoning=reasoning,
     )
+
+
+def build_search():
+    """SearchClient for the serving/storage path: in-memory (default) or Azure AI Search.
+
+    The eval path builds its own in-memory index for reproducibility; this is the
+    persistent store that backs the /contracts repository. Chosen via SEARCH_PROVIDER.
+    """
+    provider = os.environ.get("SEARCH_PROVIDER", "memory").strip().lower()
+    if provider == "azure":
+        from app.adapters.search.azure_ai_search import AzureAISearch
+        return AzureAISearch.for_azure(
+            endpoint=_require(os.environ.get("AZURE_SEARCH_ENDPOINT"), "AZURE_SEARCH_ENDPOINT"),
+            api_key=_require(os.environ.get("AZURE_SEARCH_KEY"), "AZURE_SEARCH_KEY"),
+            index_name=os.environ.get("AZURE_SEARCH_INDEX", "contracts"),
+            vector_dim=EMBED_DIM,
+        )
+    from app.adapters.search.in_memory import InMemorySearch
+    return InMemorySearch()
 
 
 @dataclass(frozen=True)

@@ -5,6 +5,7 @@ openai                 # Azure OpenAI chat client
 python-dotenv          # .env loading in app/config.py
 sentence-transformers  # local embeddings (pulls CPU torch, installed separately)
 rank-bm25              # BM25 in the in-memory hybrid search
+azure-search-documents # Azure AI Search store for the contract repository (SEARCH_PROVIDER=azure)
 pymupdf                # PDF text extraction for /ingest
 fastapi
 uvicorn

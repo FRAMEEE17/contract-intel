@@ -54,6 +54,41 @@ def test_summarize_returns_summary(make_llm, fake_embedder):
     assert "New York" in body["summary"]
 
 
+def test_add_and_list_contracts(make_llm, fake_embedder):
+    client = _client(make_llm, fake_embedder, "{}")
+    client.post("/contracts", json={"title": "A.pdf", "document_text": CONTRACT})
+    client.post("/contracts", json={"title": "B.pdf", "document_text": "Term: two years."})
+    listed = client.get("/contracts").json()
+    assert {c["document_id"] for c in listed} == {"A.pdf", "B.pdf"}
+    assert all(c["chunks"] >= 1 for c in listed)
+
+
+def test_answer_over_repository_by_document_id(make_llm, fake_embedder):
+    client = _client(make_llm, fake_embedder,
+                     '{"answer": "New York", "not_specified": false, "citations": []}')
+    client.post("/contracts", json={"title": "A.pdf", "document_text": CONTRACT})
+    body = client.post("/answer", json={"question": "Which law governs?", "document_id": "A.pdf"}).json()
+    assert body["answer"] == "New York" and body["abstained"] is False
+
+
+def test_abstract_returns_a_clause_grid(make_llm, fake_embedder):
+    client = _client(make_llm, fake_embedder,
+                     '{"answer": "New York", "not_specified": false, "citations": []}')
+    client.post("/contracts", json={"title": "A.pdf", "document_text": CONTRACT})
+    grid = client.post("/abstract", json={"document_id": "A.pdf"}).json()
+    assert grid["document_id"] == "A.pdf"
+    assert "Governing law" in grid["clauses"]
+    assert grid["clauses"]["Governing law"]["present"] is True
+
+
+def test_abstract_flags_missing_clause_on_abstention(make_llm, fake_embedder):
+    client = _client(make_llm, fake_embedder,
+                     '{"answer": "NOT SPECIFIED", "not_specified": true, "citations": []}')
+    client.post("/contracts", json={"title": "A.pdf", "document_text": CONTRACT})
+    grid = client.post("/abstract", json={"document_id": "A.pdf"}).json()
+    assert grid["clauses"]["Liability cap"]["present"] is False  # abstain -> missing clause
+
+
 def test_ingest_extracts_pdf_text(make_llm, fake_embedder):
     import fitz  # build a tiny text PDF in-memory
 

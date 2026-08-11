@@ -12,6 +12,9 @@ services:
       - .env
     environment:
       LLM_PROVIDER: azure
+      # memory by default (portable); set SEARCH_PROVIDER=azure to use Azure AI Search
+      SEARCH_PROVIDER: ${SEARCH_PROVIDER:-memory}
+      AZURE_SEARCH_INDEX: contracts
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx,sys; sys.exit(0 if httpx.get('http://localhost:8000/health').status_code==200 else 1)"]
       interval: 10s

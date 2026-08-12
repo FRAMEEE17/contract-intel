@@ -173,6 +173,16 @@ def build_llm(settings: LLMSettings | None = None) -> LLMClient:
     )
 
 
+def build_guardrail():
+    """Guardrail for the pipeline: regex (default: block injection, redact PII) or
+    passthrough. Chosen via GUARDRAIL_PROVIDER."""
+    if os.environ.get("GUARDRAIL_PROVIDER", "regex").strip().lower() == "passthrough":
+        from app.adapters.guardrails.passthrough import PassthroughGuardrail
+        return PassthroughGuardrail()
+    from app.adapters.guardrails.regex_guardrail import RegexGuardrail
+    return RegexGuardrail()
+
+
 def build_search():
     """SearchClient for the serving/storage path: in-memory (default) or Azure AI Search.
 
@@ -212,7 +222,6 @@ def build_pipeline(settings: LLMSettings | None = None) -> Pipeline:
     from app.adapters.chunking.fixed_chunker import FixedChunker
     from app.adapters.documents.text_parser import TextDocParser
     from app.adapters.embeddings.sentence_transformer import SentenceTransformerEmbedder
-    from app.adapters.guardrails.passthrough import PassthroughGuardrail
     from app.adapters.registry.file_registry import FilePromptRegistry
 
     return Pipeline(
@@ -220,7 +229,7 @@ def build_pipeline(settings: LLMSettings | None = None) -> Pipeline:
         embedder=SentenceTransformerEmbedder(),
         chunker=FixedChunker(),
         parser=TextDocParser(),
-        guardrail=PassthroughGuardrail(),
+        guardrail=build_guardrail(),
         registry=FilePromptRegistry(),
         embed_model=EMBED_MODEL,
         model=s.model,

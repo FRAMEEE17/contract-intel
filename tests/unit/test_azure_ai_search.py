@@ -99,3 +99,18 @@ def test_search_short_circuits_on_nonpositive_top_k():
     adapter, _, cli = _adapter()
     assert adapter.search(query="q", query_vector=[0.1] * 384, filters=None, top_k=0) == []
     assert cli.search_kwargs is None
+
+
+def test_credential_is_key_when_provided():
+    from azure.core.credentials import AzureKeyCredential
+    from app.adapters.search.azure_ai_search import _build_credential
+
+    assert isinstance(_build_credential("k"), AzureKeyCredential)
+
+
+def test_credential_is_managed_identity_without_key():
+    from azure.identity import DefaultAzureCredential
+    from app.adapters.search.azure_ai_search import _build_credential
+
+    assert isinstance(_build_credential(None), DefaultAzureCredential)
+    assert isinstance(_build_credential(""), DefaultAzureCredential)

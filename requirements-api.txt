@@ -1,5 +1,6 @@
 openai
 python-dotenv
+azure-identity
 sentence-transformers
 rank-bm25
 azure-search-documents

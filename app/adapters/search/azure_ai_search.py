@@ -10,7 +10,7 @@ is a base64url of the chunk id and the original rides along in a `chunk_id` fiel
 from __future__ import annotations
 
 import base64
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 
 from app.domain.ports import Chunk, RetrievedChunk
 
@@ -23,6 +23,14 @@ _SELECT = ["chunk_id", "document_id", "text", "page", "section", "source_revisio
 
 def _encode_key(chunk_id: str) -> str:
     return base64.urlsafe_b64encode(chunk_id.encode("utf-8")).decode("ascii")
+
+
+def _build_credential(api_key: Optional[str]) -> Any:
+    if api_key:
+        from azure.core.credentials import AzureKeyCredential
+        return AzureKeyCredential(api_key)
+    from azure.identity import DefaultAzureCredential  # keyless: Entra ID / Managed Identity
+    return DefaultAzureCredential()
 
 
 def _filter_expression(filters: dict | None) -> str | None:
@@ -43,16 +51,16 @@ class AzureAISearch:
 
     @classmethod
     def for_azure(
-        cls, *, endpoint: str, api_key: str, index_name: str, vector_dim: int,
+        cls, *, endpoint: str, api_key: str | None = None, index_name: str, vector_dim: int,
         retry_total: int = 5, retry_backoff_factor: float = 0.8,
     ) -> "AzureAISearch":
-        from azure.core.credentials import AzureKeyCredential
         from azure.search.documents import SearchClient
         from azure.search.documents.indexes import SearchIndexClient
 
+        credential = _build_credential(api_key)
+
         # azure-core already retries 429/5xx with exponential backoff and honors
         # Retry-After; these just make the throttling posture explicit and tunable.
-        credential = AzureKeyCredential(api_key)
         retry = {"retry_total": retry_total, "retry_backoff_factor": retry_backoff_factor}
         return cls(
             search_client=SearchClient(endpoint=endpoint, index_name=index_name, credential=credential, **retry),

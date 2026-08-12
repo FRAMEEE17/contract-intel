@@ -1,5 +1,6 @@
 openai
 python-dotenv
+azure-identity
 pymupdf
 azure-ai-documentintelligence
 sentence-transformers

@@ -47,6 +47,10 @@ resource "azurerm_container_app" "api" {
   resource_group_name          = azurerm_resource_group.this.name
   revision_mode                = "Single"
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   secret {
     name  = "azure-openai-api-key"
     value = var.azure_openai_api_key

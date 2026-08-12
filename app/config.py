@@ -135,6 +135,7 @@ def _make_client(s: LLMSettings):
                 "Managed-Identity auth needs 'azure-identity' (pip install azure-identity), "
                 "or set AZURE_OPENAI_API_KEY for local dev."
             ) from exc
+        os.environ.pop("AZURE_OPENAI_API_KEY", None)  # an empty env key shadows the token provider (openai SDK 2.x)
         token_provider = get_bearer_token_provider(DefaultAzureCredential(), _ENTRA_SCOPE)
         return AzureOpenAI(azure_endpoint=s.azure_endpoint, api_version=s.api_version,
                            azure_ad_token_provider=token_provider, timeout=s.timeout)
@@ -183,7 +184,7 @@ def build_search():
         from app.adapters.search.azure_ai_search import AzureAISearch
         return AzureAISearch.for_azure(
             endpoint=_require(os.environ.get("AZURE_SEARCH_ENDPOINT"), "AZURE_SEARCH_ENDPOINT"),
-            api_key=_require(os.environ.get("AZURE_SEARCH_KEY"), "AZURE_SEARCH_KEY"),
+            api_key=os.environ.get("AZURE_SEARCH_KEY") or None,  # empty -> Managed Identity
             index_name=os.environ.get("AZURE_SEARCH_INDEX", "contracts"),
             vector_dim=EMBED_DIM,
         )

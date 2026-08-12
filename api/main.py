@@ -10,6 +10,7 @@ injected for tests. Two retrieval paths:
 from __future__ import annotations
 
 import hashlib
+import sys
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, File, HTTPException, UploadFile # type: ignore
@@ -131,11 +132,13 @@ class ContractRepository:
 
     def answer(self, question: str, *, document_id: Optional[str], top_k: int):
         from app.application.answer import answer_question
+        from app.observability import Traced
 
         p = self._p
         return answer_question(
-            question, llm=p.llm, embedder=p.embedder, search=self._search,
-            guardrail=p.guardrail, registry=p.registry, embed_model=p.embed_model,
+            question, llm=Traced(p.llm, "llm"), embedder=Traced(p.embedder, "embed"),
+            search=Traced(self._search, "search"), guardrail=Traced(p.guardrail, "guardrail"),
+            registry=p.registry, embed_model=p.embed_model,
             model=p.model, top_k=top_k,
             filters={"document_id": document_id} if document_id else None,
         )
@@ -195,16 +198,20 @@ def create_app(pipeline: Any = None) -> FastAPI:
 
     @app.post("/answer", response_model=AnswerResponse)
     def answer(req: AnswerRequest) -> AnswerResponse:
+        from app.observability import Traced, record_outcome
+
         if req.document_text:
             from app.application.answer import answer_question
             p = get_pipeline()
             result = answer_question(
-                req.question, llm=p.llm, embedder=p.embedder, search=index_for(req.document_text),
-                guardrail=p.guardrail, registry=p.registry, embed_model=p.embed_model,
-                model=p.model, top_k=req.top_k,
+                req.question, llm=Traced(p.llm, "llm"), embedder=Traced(p.embedder, "embed"),
+                search=Traced(index_for(req.document_text), "search"),
+                guardrail=Traced(p.guardrail, "guardrail"), registry=p.registry,
+                embed_model=p.embed_model, model=p.model, top_k=req.top_k,
             )
         else:
             result = get_repo().answer(req.question, document_id=req.document_id, top_k=req.top_k)
+        record_outcome(result)
         return _to_response(result)
 
     @app.post("/summarize")
@@ -252,3 +259,9 @@ def create_app(pipeline: Any = None) -> FastAPI:
 
 
 app = create_app()
+if "pytest" not in sys.modules:  # server only; keep tests free of global OTel state
+    try:  # telemetry is optional; never block the API on it
+        from app.observability import setup_telemetry
+        setup_telemetry(app)
+    except Exception:
+        pass

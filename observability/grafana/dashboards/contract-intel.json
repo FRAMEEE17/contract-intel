@@ -1,0 +1,58 @@
+{
+  "uid": "contract-intel",
+  "title": "Contract-Intel — Observability",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "title": "Request rate by route (RED)", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "expr": "sum by (route) (rate(http_requests_total[1m]))", "legendFormat": "{{route}}" } ]
+    },
+    {
+      "id": 2, "title": "p95 latency by route (SLO < 3000 ms)", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ms", "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 3000 } ] } } },
+      "targets": [ { "expr": "histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_milliseconds_bucket[5m])))", "legendFormat": "{{route}}" } ]
+    },
+    {
+      "id": 3, "title": "Error rate (SLO < 1%)", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percentunit" } },
+      "targets": [ { "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(http_requests_total[5m])), 1)", "legendFormat": "error rate" } ]
+    },
+    {
+      "id": 4, "title": "Answer outcomes", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "expr": "sum by (outcome) (rate(answer_outcome_total[5m]))", "legendFormat": "{{outcome}}" } ]
+    },
+    {
+      "id": 5, "title": "LLM tokens / s (RAG is input-heavy)", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(llm_input_tokens_total[1m])", "legendFormat": "input" },
+        { "expr": "rate(llm_output_tokens_total[1m])", "legendFormat": "output" }
+      ]
+    },
+    {
+      "id": 6, "title": "RAG stage p95 latency (LLM dominates)", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ms" } },
+      "targets": [ { "expr": "histogram_quantile(0.95, sum by (le, stage) (rate(rag_stage_duration_milliseconds_bucket[5m])))", "legendFormat": "{{stage}}" } ]
+    },
+    {
+      "id": 7, "title": "Guardrail findings / s (injection blocks, PII redactions)", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "expr": "sum by (finding) (rate(guardrail_findings_total[5m]))", "legendFormat": "{{finding}}" } ]
+    }
+  ]
+}

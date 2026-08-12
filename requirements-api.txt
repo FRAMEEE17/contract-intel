@@ -9,3 +9,9 @@ fastapi
 uvicorn
 python-multipart
 httpx
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+opentelemetry-exporter-prometheus
+opentelemetry-exporter-otlp-proto-grpc
+prometheus-client
+azure-monitor-opentelemetry

@@ -52,6 +52,10 @@ resource "azurerm_container_app" "api" {
     value = var.azure_openai_api_key
   }
   secret {
+    name  = "azure-search-key"
+    value = var.azure_search_key
+  }
+  secret {
     name  = "acr-password"
     value = azurerm_container_registry.this.admin_password
   }
@@ -101,6 +105,22 @@ resource "azurerm_container_app" "api" {
       env {
         name        = "AZURE_OPENAI_API_KEY"
         secret_name = "azure-openai-api-key"
+      }
+      env {
+        name  = "SEARCH_PROVIDER"
+        value = "azure"
+      }
+      env {
+        name  = "AZURE_SEARCH_ENDPOINT"
+        value = var.azure_search_endpoint
+      }
+      env {
+        name  = "AZURE_SEARCH_INDEX"
+        value = "contracts"
+      }
+      env {
+        name        = "AZURE_SEARCH_KEY"
+        secret_name = "azure-search-key"
       }
     }
 

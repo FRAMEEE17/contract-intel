@@ -9,9 +9,10 @@ fastapi
 uvicorn
 python-multipart
 httpx
-opentelemetry-sdk
-opentelemetry-instrumentation-fastapi
-opentelemetry-exporter-prometheus
-opentelemetry-exporter-otlp-proto-grpc
+# pinned to the 1.36/0.57b0 line — azure-monitor-opentelemetry needs sdk~=1.36 (newer breaks its import)
+opentelemetry-sdk==1.36.0
+opentelemetry-instrumentation-fastapi==0.57b0
+opentelemetry-exporter-prometheus==0.57b0
+opentelemetry-exporter-otlp-proto-grpc==1.36.0
 prometheus-client
-azure-monitor-opentelemetry
+azure-monitor-opentelemetry==1.8.2

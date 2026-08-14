@@ -129,6 +129,14 @@ The local Grafana dashboard. The latency of each step shows the model itself tak
 
 We track the basics per route (how many requests, how many errors, how long they take) with target lines drawn in (95th percentile under 3 seconds, errors under 1%), a trace for each step of the pipeline, the number of tokens in and out for cost, and a live count of what the model decided, which tells us in production whether the "only answer when sure" behaviour still holds.
 
+## Scaling
+
+What happens when the number of contracts grows, or more people start using it?
+
+Two things grow on their own, and they scale different parts of the system. More contracts means more chunks of text, which the search store handles by adding shards and replicas. More traffic means more requests, which the stateless API handles by adding copies behind a load balancer, while the model scales on its own (on Azure you raise the provisioned throughput). Ingestion runs off a queue, so a large upload never blocks a live question.
+
+The part worth knowing is where the real limit is. The traces show the model call takes almost all of the time, so the model, not the database, is the ceiling. And more machines only raise throughput, never quality: the rate of made up answers is something you fix in the prompt, the model, and the evaluation, not by adding servers. Scaling out a wrong answer just serves it faster.
+
 ## Tech stack
 
 | Layer | Technology |

@@ -18,7 +18,7 @@ Every answer runs through a score for how often the model makes things up. We me
 
 ## Demo
 
-<video src="https://raw.githubusercontent.com/FRAMEEE17/contract-intel/main/assets/demo-azure.mp4" controls muted width="100%"></video>
+https://github.com/user-attachments/assets/4221603a-ae5c-403f-81c2-4287c3ba144e
 
 Watch or download: [assets/demo-azure.mp4](assets/demo-azure.mp4)
 
